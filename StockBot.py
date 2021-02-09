@@ -293,7 +293,7 @@ def createStock(stock):
 
 # Gets Discord Channel
 def getChannel():
-    return client.get_channel(id=TOONTOWN_CHANNEL) #TOONTOWN_CHANNEL is for Rmy
+    return client.get_channel(id=STOCK_CHANNEL) #STOCK_CHANNEL is for Rmy
 
                 
 client.run(TOKEN)
