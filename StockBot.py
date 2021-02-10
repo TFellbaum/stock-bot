@@ -18,7 +18,7 @@ REGION = os.getenv('AWS_DEFAULT_REGION')
 # Starts client and initializes stocks and messages
 client = discord.Client()
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
-#stockRequestsTable = dynamodb.Table('stock-requests')
+stockRequestsTable = dynamodb.Table('stock-requests')
 stocks = set()
 messages = set()
 mentionRequests = set()
