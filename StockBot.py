@@ -21,7 +21,7 @@ dynamodb = boto3.resource('dynamodb', region_name=REGION)
 stockRequestsTable = dynamodb.Table('stock-requests')
 stocks = set()
 messages = set()
-mentionRequests = set()
+stockRequests = set()
 
 
 # Stock Class
@@ -58,7 +58,7 @@ async def on_ready():
 #/        purging = await purgeMessages()
 
 #/    await sendHelpMessage()
-#/    await initializeMentionRequests() 
+#/    await initializeStockRequests() 
 #/    await retrieveStocks.start()
 
 
@@ -98,15 +98,9 @@ async def retrieveStocks():
 #/                    messages.add(message.id)
 
             # After editing or creating messages, check if any stock ended and messages need to be deleted
-#/            for stock in stocks:
-#/                if stock in updatedStocks:
-                    # This is necessary because data within sets are immutable. stocks has objects with message ids where
-                    # updatedStocks does not. This removes the similar stockObjects to add the message id to the updatedStocks
-#/                    updatedStocks.remove(stock)
-#/                    updatedStocks.add(stock)
 
-            # Updates tracked stocks with most recent API stocks via intersection then delete ended stock messages    
-#/            stocks.intersection_update(updatedStocks)
+
+            # Updates tracked stocks with most recent API stocks via intersection then delete ended stock messages
 #/            await deleteMessages()
 
 
@@ -121,9 +115,9 @@ async def on_message(message):
         print("start tracking stock")
 #/       stock = message.content[#7:]
 #/       user = message.author.id
-#/       mentionRequest = MentionRequest(user, stock)
-#/       mentionRequests.add(mentionRequest)
-#/       mentionRequestsTable.put_item(
+#/       stockRequest = StockRequest(user, stock)
+#/       stockRequests.add(stockRequest)
+#/       stockRequestsTable.put_item(
 #/           Item={
 #/               'user': str(user),
 #/               'stock': stock
@@ -134,17 +128,17 @@ async def on_message(message):
     # Requests to stop tracking all stocks
     elif 'stop tracking stocks' in message.content.lower():
         print("stock tracking all stocks")
-#/        mentionsToRemove = set()
-#/        for mention in mentionRequests:
-#/            if mention.user == message.author.id:
-#/                mentionsToRemove.add(mention)
+#/        stocksToRemove = set()
+#/        for stock in stockRequests:
+#/            if stock.user == message.author.id:
+#/                stocksToRemove.add(stock)
 #/
-#/        for mention in mentionsToRemove:
-#/            mentionRequests.remove(mention)
-#/            mentionRequestsTable.delete_item(
+#/        for stock in stocksToRemove:
+#/            stockRequests.remove(stock)
+#/            stockRequestsTable.delete_item(
 #/                Key={
-#/                    'user': str(mention.user),
-#/                    'stock': mention.stock
+#/                    'user': str(stock.user),
+#/                    'stock': stock.stock
 #/                }
 #/            )
 #/        await message.delete()
@@ -153,17 +147,17 @@ async def on_message(message):
     elif 'stop tracking ' in message.content.lower():
         print("Stop tracking stocks")
 #/        stock = message.content[#14:]
-#/        mentionsToRemove = set()
-#/        for mention in mentionRequests:
-#/            if mention.user == message.author.id and (mention.stock == stock):
-#/                mentionsToRemove.add(mention)
+#/        stocksToRemove = set()
+#/        for stock in stockRequests:
+#/            if stock.user == message.author.id and (stock.stock == stock):
+#/                stocksToRemove.add(stock)
 #/
-#/        for mention in mentionsToRemove:
-#/            mentionRequests.remove(mention)
-#/            mentionRequestsTable.delete_item(
+#/        for stock in stocksToRemove:
+#/            stockRequests.remove(stock)
+#/            stockRequestsTable.delete_item(
 #/                Key={
-#/                    'user': str(mention.user),
-#/                    'stock': mention.stock
+#/                    'user': str(stock.user),
+#/                    'stock': stock.stock
 #/                }
 #/            )
 #/        await message.delete()
@@ -171,9 +165,9 @@ async def on_message(message):
     # Shows all of users currently tracked stocks
     elif 'tracked stocks' in message.content.lower():
         content = ''
-        for mention in mentionRequests:
-            if mention.user == message.author.id:
-                content = content + mention.stock + '\n'
+        for stock in stockRequests:
+            if stock.user == message.author.id:
+                content = content + stock.stock + '\n'
         content = content.strip()
         if len(content) > 0:
             await getChannel().send(content=content)
@@ -248,12 +242,12 @@ async def purgeMessages():
 
 
 # Gets and formats mention requests for messages
-def getMentionRequests(stock):
+def getStockRequests(stock):
     print("getMentionRequests")
 #/    usersToMention = set()
-#/    for mention in mentionRequests:
+#/    for stock in stockRequests:
 #/        if mention.stock.lower() == stock.lower():
-#/            usersToMention.add('<@{0}>'.format(mention.user))
+#/            usersToMention.add('<@{0}>'.format(stock.user))
 #/            
 #/    content = ''
 #/    for mention in usersToMention:
