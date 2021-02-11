@@ -2,6 +2,8 @@ import boto3
 import discord
 import json
 import os
+import yfinance as yf
+import yahoo_fin.stock_info as si
 from aiohttp import ClientSession
 from boto3.dynamodb.conditions import Key, Attr
 from discord import Embed, Color
@@ -23,6 +25,8 @@ stocks = set()
 messages = set()
 stockRequests = set()
 
+# Global Variables
+bot_prefix = '!stocks'
 
 # Stock Class
 class Stock(object):
@@ -110,8 +114,22 @@ async def on_message(message):
     if isBot(message):
         return
 
+    args = message.content[len(bot_prefix):].strip().split(' ')
+
+    # Requests current price of a stock
+    if args[0].lower() == 'price':
+        if len(args) > 1:
+            # TODO: Format message in an Embed
+            currentPrice = getCurrentPrice(args[1])
+            if currentPrice:
+                await message.channel.send(f'The current price of {getStockName(args[1])} is ${currentPrice}.')
+            else:
+                await message.channel.send('Price not found for this symbol. Please try again.')
+        else:
+            await message.channel.send('Please include a ticker symbol when requesting price of a stock. \n Ex. `!stocks price TSLA`')
+
     # Requests a specific stock to track
-    if 'i want ' in message.content.lower():
+    elif 'i want ' in message.content.lower():
         print("start tracking stock")
 #/       stock = message.content[#7:]
 #/       user = message.author.id
@@ -175,10 +193,13 @@ async def on_message(message):
             await getChannel().send(content='{0} is not tracking any stocks'.format(message.author.name.split('#')[0]))
 
     # Displays help info
-    elif 'help stockbot' in message.content.lower():
+    elif args[0].lower() == 'help':
         await sendHelpMessage()
 
-        
+    # Displays about info
+    elif args[0].lower() == 'about':
+        await message.channel.send('This is what it\'s about!')
+
 # Sends and returns message in Discord Channel
 async def sendMessage(stock):
     print("send message")
@@ -289,5 +310,11 @@ def createStock(stock):
 def getChannel():
     return client.get_channel(id=STOCK_CHANNEL) #STOCK_CHANNEL is for Rmy
 
+def getCurrentPrice(symbol):
+    return round(si.get_live_price(symbol), 2)
+
+def getStockName(symbol):
+    ticker = yf.Ticker(symbol)
+    return ticker.info['shortName']
                 
 client.run(TOKEN)

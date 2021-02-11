@@ -5,3 +5,5 @@ botocore==1.19.56
 discord.py==1.5.1
 pyparsing==2.4.7
 python-dotenv==0.15.0
+yfinance==0.1.54
+yahoo-fin==0.8.6
